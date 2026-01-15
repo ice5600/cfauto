@@ -1,6 +1,5 @@
 /**
- * Cloudflare Worker 多项目部署管理器 (V5.5 Upstream Time)
- */
+ * Cloudflare Worker 多项目部署管理器 (V5.7 Ultimate Edit & Delete)
 
 // ==========================================
 // 1. 项目模板配置
@@ -111,7 +110,7 @@ export default {
 };
 
 /**
- * [核心逻辑] 定时任务：全局熔断检测 + 自动更新
+ * [核心逻辑] 定时任务
  */
 async function handleCronJob(env) {
     const ACCOUNTS_KEY = `ACCOUNTS_UNIFIED_STORAGE`;
@@ -140,7 +139,6 @@ async function handleCronJob(env) {
     let actionTaken = false;
     const fuseThreshold = parseInt(config.fuseThreshold || 0);
 
-    // 熔断逻辑
     if (fuseThreshold > 0) {
         for (const acc of accounts) {
             const stat = statsData.find(s => s.alias === acc.alias);
@@ -161,7 +159,6 @@ async function handleCronJob(env) {
         }
     }
 
-    // 自动更新逻辑
     if (!actionTaken) {
         console.log('[Update] Checking updates for both projects...');
         await Promise.all([
@@ -344,7 +341,7 @@ function mainHtml() {
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>Worker 智能中控 (V5.5)</title>
+  <title>Worker 智能中控 (V5.7)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .input-field { border: 1px solid #cbd5e1; padding: 0.25rem 0.5rem; width:100%; border-radius: 4px; font-size: 0.8rem; } 
@@ -362,8 +359,8 @@ function mainHtml() {
     
     <header class="bg-white px-6 py-4 rounded shadow flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
-            <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">🚀 Worker 部署中控 <span class="text-xs bg-slate-200 text-slate-600 px-2 py-0.5 rounded ml-2">V5.5</span></h1>
-            <div class="text-[10px] text-gray-400 mt-1">全局管理 · 自动排序 · 上游监控</div>
+            <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">🚀 Worker 部署中控 <span class="text-xs bg-slate-200 text-slate-600 px-2 py-0.5 rounded ml-2">V5.7</span></h1>
+            <div class="text-[10px] text-gray-400 mt-1">全局管理 · 自动排序 · 编辑修复</div>
         </div>
         
         <div class="flex items-center gap-3 bg-slate-50 p-2 rounded border border-slate-200">
@@ -409,7 +406,7 @@ function mainHtml() {
                  <h2 class="font-bold text-gray-700 text-sm">📡 账号管理</h2>
                  <div class="flex gap-2">
                      <button onclick="toggleAccountList()" id="btn_toggle_list" class="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-600">👁️ 显示/隐藏列表</button>
-                     <button onclick="toggleAddForm()" class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded">➕ 添加账号</button>
+                     <button onclick="resetFormForAdd()" class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded">➕ 添加账号</button>
                  </div>
             </div>
             
@@ -423,7 +420,11 @@ function mainHtml() {
                     <input id="in_workers_cmliu" placeholder="🔴 CMliu Workers (逗号隔开)" class="input-field bg-red-50">
                     <input id="in_workers_joey" placeholder="🔵 Joey Workers (逗号隔开)" class="input-field bg-blue-50">
                  </div>
-                 <button onclick="addAccount()" class="w-full bg-slate-700 text-white py-1 rounded font-bold hover:bg-slate-800">保存账号</button>
+                 <div class="flex gap-2 pt-2">
+                    <button onclick="saveAccount()" id="btn_save_acc" class="flex-1 bg-slate-700 text-white py-1.5 rounded font-bold hover:bg-slate-800 transition">💾 保存账号</button>
+                    <button onclick="deleteFromEdit()" id="btn_del_edit" class="hidden flex-none bg-red-100 text-red-600 px-3 py-1.5 rounded font-bold hover:bg-red-200 transition">🗑️ 删除此账号</button>
+                    <button onclick="cancelEdit()" class="flex-none bg-gray-200 text-gray-600 px-3 py-1.5 rounded font-bold hover:bg-gray-300 transition">❌ 取消</button>
+                 </div>
             </div>
        
             <div id="account_list_container" class="overflow-x-auto max-h-[400px]">
@@ -483,6 +484,7 @@ function mainHtml() {
       'joey':  { defaultVars: ["u", "d"], uuidField: "u" }
     };
     let accounts = [];
+    let editingIndex = -1; // 核心：当前正在编辑的账号索引
 
     async function init() {
         await loadAccounts();
@@ -524,8 +526,9 @@ function mainHtml() {
                     \${(a.workers_cmliu||[]).map(w=>\`<span class="text-red-600 bg-red-50 border border-red-100 px-1 rounded text-[10px] mr-1">\${w}</span>\`).join('')}
                     \${(a.workers_joey||[]).map(w=>\`<span class="text-blue-600 bg-blue-50 border border-blue-100 px-1 rounded text-[10px] mr-1">\${w}</span>\`).join('')}
                 </td>
-                <td class="text-right">
-                    <button onclick="delAccount(\${i})" class="text-red-500 hover:text-red-700">×</button>
+                <td class="text-right flex justify-end">
+                    <button onclick="editAccount(\${i})" class="text-blue-500 hover:text-blue-700 mr-2" title="修改">✎</button>
+                    <button onclick="delAccount(\${i})" class="text-red-500 hover:text-red-700" title="删除">×</button>
                 </td>
             </tr>
         \`).join('');
@@ -539,22 +542,14 @@ function mainHtml() {
             const res = await fetch('/api/stats');
             const data = await res.json();
             if(data.length === 0) { tb.innerHTML = '<tr><td colspan="3" class="text-center text-gray-300">无数据</td></tr>'; return; }
-            
             data.sort((a, b) => (b.total || 0) - (a.total || 0));
-
             tb.innerHTML = data.map(item => {
                 if(item.error) return \`<tr><td class="text-red-500" colspan="3">\${item.alias}: \${item.error}</td></tr>\`;
                 const percent = Math.min((item.total / item.max) * 100, 100).toFixed(1);
                 let color = 'text-green-600';
                 if(percent > 80) color = 'text-orange-500';
                 if(percent >= 100) color = 'text-red-600 font-bold';
-                return \`
-                    <tr>
-                        <td class="font-medium">\${item.alias}</td>
-                        <td class="font-mono text-gray-600">\${item.total.toLocaleString()} / \${item.max.toLocaleString()}</td>
-                        <td class="\${color}">\${percent}%</td>
-                    </tr>
-                \`;
+                return \`<tr><td class="font-medium">\${item.alias}</td><td class="font-mono text-gray-600">\${item.total.toLocaleString()} / \${item.max.toLocaleString()}</td><td class="\${color}">\${percent}%</td></tr>\`;
             }).join('');
         } catch(e) { tb.innerHTML = '<tr><td colspan="3" class="text-red-500">加载失败</td></tr>'; }
         btn.innerText = '🔄 刷新';
@@ -588,31 +583,19 @@ function mainHtml() {
             const savedVars = await res.json();
             const defaults = TEMPLATES[type].defaultVars;
             const uuidKey = TEMPLATES[type].uuidField;
-            
             const varMap = new Map();
             if(Array.isArray(savedVars)) savedVars.forEach(v => varMap.set(v.key, v.value));
-            
-            defaults.forEach(k => {
-                if(!varMap.has(k)) varMap.set(k, k === uuidKey ? crypto.randomUUID() : '');
-            });
-            
-            container.innerHTML = '';
-            varMap.forEach((v, k) => {
-                addVarRow(type, k, v, true);
-            });
+            defaults.forEach(k => { if(!varMap.has(k)) varMap.set(k, k === uuidKey ? crypto.randomUUID() : ''); });
+            container.innerHTML = ''; 
+            varMap.forEach((v, k) => { addVarRow(type, k, v); });
         } catch(e) { container.innerHTML = '加载失败'; }
     }
 
-    function addVarRow(type, key = '', val = '', isLoaded = false) {
+    function addVarRow(type, key = '', val = '') {
         const container = document.getElementById(\`vars_\${type}\`);
         const div = document.createElement('div');
         div.className = \`flex gap-1 items-center mb-1 var-row-\${type}\`;
-        
-        div.innerHTML = \`
-            <input class="input-field w-1/3 var-key font-bold text-gray-700" placeholder="Key" value="\${key}">
-            <input class="input-field w-2/3 var-val" placeholder="Value" value="\${val}">
-            <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-red-500 px-1 font-bold">×</button>
-        \`;
+        div.innerHTML = \`<input class="input-field w-1/3 var-key font-bold text-gray-700" placeholder="Key" value="\${key}"><input class="input-field w-2/3 var-val" placeholder="Value" value="\${val}"><button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-red-500 px-1 font-bold">×</button>\`;
         container.appendChild(div);
     }
 
@@ -620,7 +603,6 @@ function mainHtml() {
         const btn = document.getElementById(\`btn_deploy_\${type}\`);
         const originalText = btn.innerText;
         btn.disabled = true; btn.innerText = "⏳ 部署中...";
-        
         const rows = document.querySelectorAll(\`.var-row-\${type}\`);
         const variables = [];
         rows.forEach(r => {
@@ -628,20 +610,16 @@ function mainHtml() {
             const v = r.querySelector('.var-val').value.trim();
             if(k) variables.push({ key: k, value: v });
         });
-
         await fetch(\`/api/settings?type=\${type}\`, { method: 'POST', body: JSON.stringify(variables) });
-
         const logBox = document.getElementById('logs');
         logBox.classList.remove('hidden');
         logBox.innerHTML = \`<div class="text-yellow-400">⚡ 正在部署 \${type} ...</div>\`;
-        
         try {
             const res = await fetch(\`/api/deploy?type=\${type}\`, { method: 'POST', body: JSON.stringify({variables}) });
             const logs = await res.json();
             logBox.innerHTML += logs.map(l => \`<div>[\${l.success ? 'OK' : 'ERR'}] \${l.name}: <span class="text-gray-400">\${l.msg}</span></div>\`).join('');
             setTimeout(() => checkUpdate(type), 1000);
         } catch(e) { logBox.innerHTML += \`<div class="text-red-500">❌ 系统错误: \${e.message}</div>\`; }
-        
         btn.disabled = false; btn.innerText = originalText;
     }
 
@@ -650,14 +628,10 @@ function mainHtml() {
         try {
             const res = await fetch(\`/api/check_update?type=\${type}\`);
             const d = await res.json();
-            // 获取上游时间
             const upstreamTime = d.remote ? timeAgo(d.remote.date) : "未知时间";
-            
             if(d.remote && (!d.local || d.remote.sha !== d.local.sha)) {
-                // 有更新：上游时间放在左侧
                 el.innerHTML = \`<span class="text-gray-400 mr-2">\${upstreamTime}</span><span class="text-red-500 font-bold animate-pulse">🔴 有更新</span>\`;
             } else {
-                // 已最新：上游时间放在左侧
                 el.innerHTML = \`<span class="text-gray-400 mr-2">\${upstreamTime}</span><span class="text-green-600">✅ 已是最新</span>\`;
             }
         } catch(e) { el.innerText = '状态获取失败'; }
@@ -677,33 +651,105 @@ function mainHtml() {
         });
     }
 
-    function toggleAddForm() {
-        document.getElementById('account_form').classList.toggle('hidden');
-    }
-    
     function toggleAccountList() {
         document.getElementById('account_list_container').classList.toggle('hidden');
     }
 
-    async function addAccount() {
-        const alias = document.getElementById('in_alias').value;
-        const id = document.getElementById('in_id').value;
-        const token = document.getElementById('in_token').value;
-        const cW = document.getElementById('in_workers_cmliu').value.split(/,|，/).filter(x=>x);
-        const jW = document.getElementById('in_workers_joey').value.split(/,|，/).filter(x=>x);
+    // ===================================
+    // 账号增删改查核心逻辑 (Fixed)
+    // ===================================
+
+    // 重置表单为“添加”模式
+    function resetFormForAdd() {
+        editingIndex = -1; // 重置索引
+        document.getElementById('in_alias').value = '';
+        document.getElementById('in_id').value = '';
+        document.getElementById('in_token').value = '';
+        document.getElementById('in_workers_cmliu').value = '';
+        document.getElementById('in_workers_joey').value = '';
         
-        if(!id || !token) return alert('ID/Token 必填');
-        accounts.push({ alias, accountId: id, apiToken: token, workers_cmliu: cW, workers_joey: jW });
+        // UI 状态
+        document.getElementById('account_form').classList.remove('hidden');
+        document.getElementById('btn_save_acc').innerText = "💾 保存账号";
+        document.getElementById('btn_save_acc').className = "flex-1 bg-slate-700 text-white py-1.5 rounded font-bold hover:bg-slate-800 transition";
+        document.getElementById('btn_del_edit').classList.add('hidden'); // 隐藏修改页的删除按钮
+    }
+
+    // 进入“编辑”模式
+    function editAccount(i) {
+        editingIndex = i; // 标记正在编辑的索引
+        const a = accounts[i];
+        
+        // 填充表单
+        document.getElementById('in_alias').value = a.alias;
+        document.getElementById('in_id').value = a.accountId;
+        document.getElementById('in_token').value = a.apiToken;
+        document.getElementById('in_workers_cmliu').value = (a.workers_cmliu||[]).join(',');
+        document.getElementById('in_workers_joey').value = (a.workers_joey||[]).join(',');
+        
+        // UI 状态
+        document.getElementById('account_form').classList.remove('hidden');
+        document.getElementById('in_alias').focus();
+        
+        // 改变保存按钮样式
+        const btn = document.getElementById('btn_save_acc');
+        btn.innerText = "✅ 确认修改";
+        btn.className = "flex-1 bg-orange-600 text-white py-1.5 rounded font-bold hover:bg-orange-700 transition";
+        
+        // 显示修改页的删除按钮
+        document.getElementById('btn_del_edit').classList.remove('hidden');
+    }
+
+    // 保存 (包含添加和修改)
+    async function saveAccount() {
+        const alias = document.getElementById('in_alias').value.trim();
+        const id = document.getElementById('in_id').value.trim();
+        const token = document.getElementById('in_token').value.trim();
+        const cW = document.getElementById('in_workers_cmliu').value.split(/,|，/).map(s=>s.trim()).filter(s=>s);
+        const jW = document.getElementById('in_workers_joey').value.split(/,|，/).map(s=>s.trim()).filter(s=>s);
+        
+        if(!id || !token) return alert('ID 和 Token 必填');
+        
+        const accObj = { alias: alias || '未命名', accountId: id, apiToken: token, workers_cmliu: cW, workers_joey: jW };
+
+        if (editingIndex >= 0) {
+            // 修改现有
+            accounts[editingIndex] = accObj;
+        } else {
+            // 新增
+            accounts.push(accObj);
+        }
+        
         await fetch('/api/accounts', { method: 'POST', body: JSON.stringify(accounts) });
         renderAccounts();
+        resetFormForAdd(); // 保存后重置
+        document.getElementById('account_form').classList.add('hidden'); // 也可以选择不隐藏，看习惯
+    }
+
+    function cancelEdit() {
+        resetFormForAdd();
         document.getElementById('account_form').classList.add('hidden');
     }
 
+    // 列表页删除
     async function delAccount(i) {
-        if(!confirm('删除此账号?')) return;
+        if(!confirm('确定要删除此账号吗？此操作不可恢复。')) return;
         accounts.splice(i, 1);
         await fetch('/api/accounts', { method: 'POST', body: JSON.stringify(accounts) });
         renderAccounts();
+        // 如果正在编辑的刚好是被删除的，重置表单
+        if(editingIndex === i) cancelEdit();
+    }
+
+    // 修改页删除
+    async function deleteFromEdit() {
+        if(editingIndex === -1) return;
+        if(!confirm('确定要删除当前编辑的账号吗？')) return;
+        
+        accounts.splice(editingIndex, 1);
+        await fetch('/api/accounts', { method: 'POST', body: JSON.stringify(accounts) });
+        renderAccounts();
+        cancelEdit();
     }
 
     init();
