@@ -12,364 +12,364 @@
 // ==========================================
 const TEMPLATES = {
     'cmliu': {
-      name: "CMliu - EdgeTunnel",
-      ghUser: "cmliu",
-      ghRepo: "edgetunnel",
-      ghBranch: "beta2.0",
-      ghPath: "_worker.js",
-      defaultVars: ["UUID", "PROXYIP", "DOH", "PATH", "URL", "KEY", "ADMIN"],
-      uuidField: "UUID",
-      description: "CMliu (beta2.0) - 建议开启 KV"
+        name: "CMliu - EdgeTunnel",
+        ghUser: "cmliu",
+        ghRepo: "edgetunnel",
+        ghBranch: "beta2.0",
+        ghPath: "_worker.js",
+        defaultVars: ["UUID", "PROXYIP", "DOH", "PATH", "URL", "KEY", "ADMIN"],
+        uuidField: "UUID",
+        description: "CMliu (beta2.0) - 建议开启 KV"
     },
     'joey': {
-      name: "Joey - 少年你相信光吗",
-      ghUser: "byJoey",
-      ghRepo: "cfnew",
-      ghBranch: "main",
-      ghPath: "少年你相信光吗",
-      defaultVars: ["u", "d", "p"],
-      uuidField: "u",
-      description: "Joey (自动修复) - KV 可选"
+        name: "Joey - 少年你相信光吗",
+        ghUser: "byJoey",
+        ghRepo: "cfnew",
+        ghBranch: "main",
+        ghPath: "少年你相信光吗",
+        defaultVars: ["u", "d", "p"],
+        uuidField: "u",
+        description: "Joey (自动修复) - KV 可选"
     },
     'ech': {
-      name: "ECH - WebSocket Proxy",
-      ghUser: "hc990275",
-      ghRepo: "ech-wk",
-      ghBranch: "main",
-      ghPath: "_worker.js",
-      defaultVars: ["PROXYIP"], 
-      uuidField: "", 
-      description: "ECH (无需频繁更新)"
+        name: "ECH - WebSocket Proxy",
+        ghUser: "hc990275",
+        ghRepo: "ech-wk",
+        ghBranch: "main",
+        ghPath: "_worker.js",
+        defaultVars: ["PROXYIP"],
+        uuidField: "",
+        description: "ECH (无需频繁更新)"
     }
-  };
-  
-  const ECH_PROXIES = [
-      {group:"Global", list:["ProxyIP.CMLiussss.net", "ProxyIP.Aliyun.CMLiussss.net", "ProxyIP.Oracle.CMLiussss.net"]},
-      {group:"HK (香港)", list:["ProxyIP.HK.CMLiussss.net", "ProxyIP.Aliyun.HK.CMLiussss.net", "ProxyIP.Oracle.HK.CMLiussss.net"]},
-      {group:"JP (日本)", list:["ProxyIP.JP.CMLiussss.net", "ProxyIP.Aliyun.JP.CMLiussss.net", "ProxyIP.Oracle.JP.CMLiussss.net"]},
-      {group:"SG (新加坡)", list:["ProxyIP.SG.CMLiussss.net", "ProxyIP.Aliyun.SG.CMLiussss.net", "ProxyIP.Oracle.SG.CMLiussss.net"]},
-      {group:"KR (韩国)", list:["ProxyIP.KR.CMLiussss.net", "ProxyIP.Oracle.KR.CMLiussss.net"]},
-      {group:"US (美国)", list:["ProxyIP.US.CMLiussss.net", "ProxyIP.Aliyun.US.CMLiussss.net", "ProxyIP.Oracle.US.CMLiussss.net"]},
-      {group:"Europe", list:["ProxyIP.DE.CMLiussss.net (德国)", "ProxyIP.UK.CMLiussss.net (英国)", "ProxyIP.FR.CMLiussss.net (法国)", "ProxyIP.NL.CMLiussss.net (荷兰)", "ProxyIP.RU.CMLiussss.net (俄罗斯)"]},
-      {group:"Others", list:["ProxyIP.TW.CMLiussss.net (台湾)", "ProxyIP.AU.CMLiussss.net (澳洲)", "ProxyIP.IN.CMLiussss.net (印度)"]}
-  ];
-  
-  export default {
+};
+
+const ECH_PROXIES = [
+    { group: "Global", list: ["ProxyIP.CMLiussss.net", "ProxyIP.Aliyun.CMLiussss.net", "ProxyIP.Oracle.CMLiussss.net"] },
+    { group: "HK (香港)", list: ["ProxyIP.HK.CMLiussss.net", "ProxyIP.Aliyun.HK.CMLiussss.net", "ProxyIP.Oracle.HK.CMLiussss.net"] },
+    { group: "JP (日本)", list: ["ProxyIP.JP.CMLiussss.net", "ProxyIP.Aliyun.JP.CMLiussss.net", "ProxyIP.Oracle.JP.CMLiussss.net"] },
+    { group: "SG (新加坡)", list: ["ProxyIP.SG.CMLiussss.net", "ProxyIP.Aliyun.SG.CMLiussss.net", "ProxyIP.Oracle.SG.CMLiussss.net"] },
+    { group: "KR (韩国)", list: ["ProxyIP.KR.CMLiussss.net", "ProxyIP.Oracle.KR.CMLiussss.net"] },
+    { group: "US (美国)", list: ["ProxyIP.US.CMLiussss.net", "ProxyIP.Aliyun.US.CMLiussss.net", "ProxyIP.Oracle.US.CMLiussss.net"] },
+    { group: "Europe", list: ["ProxyIP.DE.CMLiussss.net (德国)", "ProxyIP.UK.CMLiussss.net (英国)", "ProxyIP.FR.CMLiussss.net (法国)", "ProxyIP.NL.CMLiussss.net (荷兰)", "ProxyIP.RU.CMLiussss.net (俄罗斯)"] },
+    { group: "Others", list: ["ProxyIP.TW.CMLiussss.net (台湾)", "ProxyIP.AU.CMLiussss.net (澳洲)", "ProxyIP.IN.CMLiussss.net (印度)"] }
+];
+
+export default {
     async scheduled(event, env, ctx) {
-      if (env.CONFIG_KV) {
-          ctx.waitUntil(handleCronJob(env));
-      }
+        if (env.CONFIG_KV) {
+            ctx.waitUntil(handleCronJob(env));
+        }
     },
-  
+
     async fetch(request, env) {
-      try {
-          if (!env.CONFIG_KV) {
-              return new Response(`KV Not Bound (Error 1001)`, { status: 500 });
-          }
-
-          const url = new URL(request.url);
-          const correctCode = env.ACCESS_CODE; 
-          const urlCode = url.searchParams.get("code");
-          const cookieHeader = request.headers.get("Cookie") || "";
-          
-          if (url.pathname === "/manifest.json") {
-              return new Response(JSON.stringify({
-                  "name": "Worker Pro", "short_name": "WorkerPro", "start_url": "/", "display": "standalone",
-                  "background_color": "#f3f4f6", "theme_color": "#1e293b",
-                  "icons": [{ "src": "https://www.cloudflare.com/img/logo-cloudflare-dark.svg", "sizes": "192x192", "type": "image/svg+xml" }]
-              }), { headers: { "Content-Type": "application/json" } });
-          }
-    
-          if (correctCode && !cookieHeader.includes(`auth=${correctCode}`) && urlCode !== correctCode) {
-            return new Response(loginHtml(), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
-          }
-      
-          const ACCOUNTS_KEY = `ACCOUNTS_UNIFIED_STORAGE`; 
-          const GLOBAL_CONFIG_KEY = `AUTO_UPDATE_CFG_GLOBAL`;
-      
-          // API 路由
-          if (url.pathname === "/api/accounts") {
-            if (request.method === "GET") return new Response(await env.CONFIG_KV.get(ACCOUNTS_KEY) || "[]", { headers: { "Content-Type": "application/json" } });
-            if (request.method === "POST") { await env.CONFIG_KV.put(ACCOUNTS_KEY, JSON.stringify(await request.json())); return new Response(JSON.stringify({ success: true })); }
-          }
-          if (url.pathname === "/api/settings") {
-            const type = url.searchParams.get("type");
-            const VARS_KEY = `VARS_${type}`;
-            if (request.method === "GET") return new Response(await env.CONFIG_KV.get(VARS_KEY) || "null", { headers: { "Content-Type": "application/json" } });
-            if (request.method === "POST") { await env.CONFIG_KV.put(VARS_KEY, JSON.stringify(await request.json())); return new Response(JSON.stringify({ success: true })); }
-          }
-          if (url.pathname === "/api/deploy_config") {
-              const type = url.searchParams.get("type");
-              const key = `DEPLOY_CONFIG_${type}`;
-              const defaultCfg = { mode: 'latest', currentSha: null, deployTime: null };
-              return new Response(await env.CONFIG_KV.get(key) || JSON.stringify(defaultCfg), { headers: { "Content-Type": "application/json" } });
-          }
-          if (url.pathname === "/api/favorites") {
-              const type = url.searchParams.get("type");
-              const key = `FAVORITES_${type}`;
-              if (request.method === "GET") return new Response(await env.CONFIG_KV.get(key) || "[]", { headers: { "Content-Type": "application/json" } });
-              if (request.method === "POST") {
-                  const { action, item } = await request.json();
-                  let favs = JSON.parse(await env.CONFIG_KV.get(key) || "[]");
-                  if (action === 'add') { if (!favs.find(f => f.sha === item.sha)) favs.unshift(item); } 
-                  else if (action === 'remove') { favs = favs.filter(f => f.sha !== item.sha); }
-                  await env.CONFIG_KV.put(key, JSON.stringify(favs));
-                  return new Response(JSON.stringify({ success: true, favorites: favs }), { headers: { "Content-Type": "application/json" } });
-              }
-          }
-          if (url.pathname === "/api/auto_config") {
-            if (request.method === "GET") return new Response(await env.CONFIG_KV.get(GLOBAL_CONFIG_KEY) || "{}", { headers: { "Content-Type": "application/json" } });
-            if (request.method === "POST") {
-                const body = await request.json();
-                await env.CONFIG_KV.put(GLOBAL_CONFIG_KEY, JSON.stringify(body));
-                return new Response(JSON.stringify({ success: true }));
+        try {
+            if (!env.CONFIG_KV) {
+                return new Response(`KV Not Bound (Error 1001)`, { status: 500 });
             }
-          }
-          if (url.pathname === "/api/check_update") {
-              const type = url.searchParams.get("type");
-              const mode = url.searchParams.get("mode");
-              const limitStr = url.searchParams.get("limit");
-              const limit = limitStr ? parseInt(limitStr) : 10;
-              return await handleCheckUpdate(env, type, mode, limit);
-          }
-          if (url.pathname === "/api/get_code") {
-              const type = url.searchParams.get("type");
-              return await handleGetCode(env, type);
-          }
-          if (url.pathname === "/api/deploy" && request.method === "POST") {
-            const { type, variables, deletedVariables, targetSha } = await request.json();
-            return await handleManualDeploy(env, type, variables, deletedVariables, ACCOUNTS_KEY, targetSha);
-          }
-          if (url.pathname === "/api/batch_deploy" && request.method === "POST") {
-            const data = await request.json(); 
-            return await handleBatchDeploy(env, data, ACCOUNTS_KEY);
-          }
-          if (url.pathname === "/api/zones" && request.method === "POST") {
-              const { accountId, email, globalKey } = await request.json();
-              return await handleGetZones(accountId, email, globalKey);
-          }
-          if (url.pathname === "/api/all_workers" && request.method === "POST") {
-              const { accountId, email, globalKey } = await request.json();
-              return await handleGetAllWorkers(accountId, email, globalKey);
-          }
-          if (url.pathname === "/api/delete_worker" && request.method === "POST") {
-              const { accountId, email, globalKey, workerName, deleteKv } = await request.json();
-              return await handleDeleteWorker(env, accountId, email, globalKey, workerName, deleteKv);
-          }
-          if (url.pathname === "/api/stats") return await handleStats(env, ACCOUNTS_KEY);
-          if (url.pathname === "/api/fetch_bindings" && request.method === "POST") {
-              const { accountId, email, globalKey, workerName } = await request.json();
-              return await handleFetchBindings(accountId, email, globalKey, workerName);
-          }
-      
-          const response = new Response(mainHtml(), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
-          if (urlCode === correctCode && correctCode) {
-            response.headers.set("Set-Cookie", `auth=${correctCode}; Path=/; HttpOnly; Max-Age=86400; SameSite=Lax`);
-          }
-          return response;
 
-      } catch (err) {
-          return new Response(`System Error: ${err.message}\n${err.stack}`, { status: 500 });
-      }
+            const url = new URL(request.url);
+            const correctCode = env.ACCESS_CODE;
+            const urlCode = url.searchParams.get("code");
+            const cookieHeader = request.headers.get("Cookie") || "";
+
+            if (url.pathname === "/manifest.json") {
+                return new Response(JSON.stringify({
+                    "name": "Worker Pro", "short_name": "WorkerPro", "start_url": "/", "display": "standalone",
+                    "background_color": "#f3f4f6", "theme_color": "#1e293b",
+                    "icons": [{ "src": "https://www.cloudflare.com/img/logo-cloudflare-dark.svg", "sizes": "192x192", "type": "image/svg+xml" }]
+                }), { headers: { "Content-Type": "application/json" } });
+            }
+
+            if (correctCode && !cookieHeader.includes(`auth=${correctCode}`) && urlCode !== correctCode) {
+                return new Response(loginHtml(), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
+            }
+
+            const ACCOUNTS_KEY = `ACCOUNTS_UNIFIED_STORAGE`;
+            const GLOBAL_CONFIG_KEY = `AUTO_UPDATE_CFG_GLOBAL`;
+
+            // API 路由
+            if (url.pathname === "/api/accounts") {
+                if (request.method === "GET") return new Response(await env.CONFIG_KV.get(ACCOUNTS_KEY) || "[]", { headers: { "Content-Type": "application/json" } });
+                if (request.method === "POST") { await env.CONFIG_KV.put(ACCOUNTS_KEY, JSON.stringify(await request.json())); return new Response(JSON.stringify({ success: true })); }
+            }
+            if (url.pathname === "/api/settings") {
+                const type = url.searchParams.get("type");
+                const VARS_KEY = `VARS_${type}`;
+                if (request.method === "GET") return new Response(await env.CONFIG_KV.get(VARS_KEY) || "null", { headers: { "Content-Type": "application/json" } });
+                if (request.method === "POST") { await env.CONFIG_KV.put(VARS_KEY, JSON.stringify(await request.json())); return new Response(JSON.stringify({ success: true })); }
+            }
+            if (url.pathname === "/api/deploy_config") {
+                const type = url.searchParams.get("type");
+                const key = `DEPLOY_CONFIG_${type}`;
+                const defaultCfg = { mode: 'latest', currentSha: null, deployTime: null };
+                return new Response(await env.CONFIG_KV.get(key) || JSON.stringify(defaultCfg), { headers: { "Content-Type": "application/json" } });
+            }
+            if (url.pathname === "/api/favorites") {
+                const type = url.searchParams.get("type");
+                const key = `FAVORITES_${type}`;
+                if (request.method === "GET") return new Response(await env.CONFIG_KV.get(key) || "[]", { headers: { "Content-Type": "application/json" } });
+                if (request.method === "POST") {
+                    const { action, item } = await request.json();
+                    let favs = JSON.parse(await env.CONFIG_KV.get(key) || "[]");
+                    if (action === 'add') { if (!favs.find(f => f.sha === item.sha)) favs.unshift(item); }
+                    else if (action === 'remove') { favs = favs.filter(f => f.sha !== item.sha); }
+                    await env.CONFIG_KV.put(key, JSON.stringify(favs));
+                    return new Response(JSON.stringify({ success: true, favorites: favs }), { headers: { "Content-Type": "application/json" } });
+                }
+            }
+            if (url.pathname === "/api/auto_config") {
+                if (request.method === "GET") return new Response(await env.CONFIG_KV.get(GLOBAL_CONFIG_KEY) || "{}", { headers: { "Content-Type": "application/json" } });
+                if (request.method === "POST") {
+                    const body = await request.json();
+                    await env.CONFIG_KV.put(GLOBAL_CONFIG_KEY, JSON.stringify(body));
+                    return new Response(JSON.stringify({ success: true }));
+                }
+            }
+            if (url.pathname === "/api/check_update") {
+                const type = url.searchParams.get("type");
+                const mode = url.searchParams.get("mode");
+                const limitStr = url.searchParams.get("limit");
+                const limit = limitStr ? parseInt(limitStr) : 10;
+                return await handleCheckUpdate(env, type, mode, limit);
+            }
+            if (url.pathname === "/api/get_code") {
+                const type = url.searchParams.get("type");
+                return await handleGetCode(env, type);
+            }
+            if (url.pathname === "/api/deploy" && request.method === "POST") {
+                const { type, variables, deletedVariables, targetSha } = await request.json();
+                return await handleManualDeploy(env, type, variables, deletedVariables, ACCOUNTS_KEY, targetSha);
+            }
+            if (url.pathname === "/api/batch_deploy" && request.method === "POST") {
+                const data = await request.json();
+                return await handleBatchDeploy(env, data, ACCOUNTS_KEY);
+            }
+            if (url.pathname === "/api/zones" && request.method === "POST") {
+                const { accountId, email, globalKey } = await request.json();
+                return await handleGetZones(accountId, email, globalKey);
+            }
+            if (url.pathname === "/api/all_workers" && request.method === "POST") {
+                const { accountId, email, globalKey } = await request.json();
+                return await handleGetAllWorkers(accountId, email, globalKey);
+            }
+            if (url.pathname === "/api/delete_worker" && request.method === "POST") {
+                const { accountId, email, globalKey, workerName, deleteKv } = await request.json();
+                return await handleDeleteWorker(env, accountId, email, globalKey, workerName, deleteKv);
+            }
+            if (url.pathname === "/api/stats") return await handleStats(env, ACCOUNTS_KEY);
+            if (url.pathname === "/api/fetch_bindings" && request.method === "POST") {
+                const { accountId, email, globalKey, workerName } = await request.json();
+                return await handleFetchBindings(accountId, email, globalKey, workerName);
+            }
+
+            const response = new Response(mainHtml(), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
+            if (urlCode === correctCode && correctCode) {
+                response.headers.set("Set-Cookie", `auth=${correctCode}; Path=/; HttpOnly; Max-Age=86400; SameSite=Lax`);
+            }
+            return response;
+
+        } catch (err) {
+            return new Response(`System Error: ${err.message}\n${err.stack}`, { status: 500 });
+        }
     }
-  };
-  
-  // ================= 后端辅助函数 =================
-  
-  function getGithubUrls(type, sha = null) {
-      const t = TEMPLATES[type];
-      const safePath = t.ghPath.split('/').map(p => encodeURIComponent(p)).join('/');
-      const apiUrl = `https://api.github.com/repos/${t.ghUser}/${t.ghRepo}/commits`;
-      const ref = sha || t.ghBranch;
-      const scriptUrl = `https://raw.githubusercontent.com/${t.ghUser}/${t.ghRepo}/${ref}/${safePath}`;
-      return { apiUrl, scriptUrl, branch: t.ghBranch };
-  }
+};
 
-  function getAuthHeaders(email, key) {
-      return { "X-Auth-Email": email, "X-Auth-Key": key, "Content-Type": "application/json" };
-  }
+// ================= 后端辅助函数 =================
 
-  function getUploadHeaders(email, key) {
-      return { "X-Auth-Email": email, "X-Auth-Key": key };
-  }
+function getGithubUrls(type, sha = null) {
+    const t = TEMPLATES[type];
+    const safePath = t.ghPath.split('/').map(p => encodeURIComponent(p)).join('/');
+    const apiUrl = `https://api.github.com/repos/${t.ghUser}/${t.ghRepo}/commits`;
+    const ref = sha || t.ghBranch;
+    const scriptUrl = `https://raw.githubusercontent.com/${t.ghUser}/${t.ghRepo}/${ref}/${safePath}`;
+    return { apiUrl, scriptUrl, branch: t.ghBranch };
+}
 
-  // [服务器端轻量混淆] 供自动更新/熔断使用，避免依赖 heavy libraries
-  function serverSideObfuscate(code) {
-      // 1. 注入 Window Polyfill
-      if (!code.includes('var window = globalThis')) {
-          code = 'var window = globalThis;\n' + code;
-      }
-      // 2. 移除注释 (简单正则)
-      code = code.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');
-      // 3. 压缩空白
-      code = code.replace(/^\s+|\s+$/gm, '').replace(/\n+/g, '\n');
-      return code;
-  }
+function getAuthHeaders(email, key) {
+    return { "X-Auth-Email": email, "X-Auth-Key": key, "Content-Type": "application/json" };
+}
 
-  async function handleCronJob(env) {
-      const ACCOUNTS_KEY = `ACCOUNTS_UNIFIED_STORAGE`;
-      const GLOBAL_CONFIG_KEY = `AUTO_UPDATE_CFG_GLOBAL`;
-      const configStr = await env.CONFIG_KV.get(GLOBAL_CONFIG_KEY);
-      if (!configStr) return;
-      const config = JSON.parse(configStr);
-      if (!config.enabled) return;
-  
-      const now = Date.now();
-      const lastCheck = config.lastCheck || 0;
-      const intervalMs = (parseInt(config.interval) || 30) * 60 * 1000;
-      // 读取自动混淆配置
-      const autoObfuscate = !!config.obfuscate; 
-  
-      if (now - lastCheck <= intervalMs) return;
-      
-      const accounts = JSON.parse(await env.CONFIG_KV.get(ACCOUNTS_KEY) || "[]");
-      if (accounts.length === 0) return;
-      
-      const statsData = await fetchInternalStats(accounts);
-      let actionTaken = false;
-  
-      const fuseThreshold = parseInt(config.fuseThreshold || 0);
-      if (fuseThreshold > 0) {
-          for (const acc of accounts) {
-              const stat = statsData.find(s => s.alias === acc.alias);
-              if (!stat || stat.error) continue;
-              const limit = stat.max || 100000;
-              // [熔断触发] 超过阈值
-              if ((stat.total / limit) * 100 >= fuseThreshold) {
-                  // 强制携带 obfuscate 参数进行部署
-                  await rotateUUIDAndDeploy(env, 'cmliu', accounts, ACCOUNTS_KEY, autoObfuscate);
-                  await rotateUUIDAndDeploy(env, 'joey', accounts, ACCOUNTS_KEY, autoObfuscate);
-                  actionTaken = true;
-                  break; 
-              }
-          }
-      }
-  
-      if (!actionTaken) {
-          // [自动更新] 携带混淆参数
-          await Promise.all([
-              checkAndDeployUpdate(env, 'cmliu', accounts, ACCOUNTS_KEY, autoObfuscate),
-              checkAndDeployUpdate(env, 'joey', accounts, ACCOUNTS_KEY, autoObfuscate)
-          ]);
-      }
-  
-      config.lastCheck = now;
-      await env.CONFIG_KV.put(GLOBAL_CONFIG_KEY, JSON.stringify(config));
-  }
-  
-  async function checkAndDeployUpdate(env, type, accounts, accountsKey, doObfuscate) {
-      try {
-          const deployConfig = JSON.parse(await env.CONFIG_KV.get(`DEPLOY_CONFIG_${type}`) || '{"mode":"latest"}');
-          if (deployConfig.mode === 'fixed') return; 
-  
-          const res = await handleCheckUpdate(env, type, 'latest');
-          const checkData = await res.json();
-          
-          if (checkData.remote && (!checkData.local || checkData.remote.sha !== checkData.local.sha)) {
-              const varsStr = await env.CONFIG_KV.get(`VARS_${type}`);
-              const variables = varsStr ? JSON.parse(varsStr) : [];
-              // 传入 doObfuscate
-              await coreDeployLogic(env, type, variables, [], accountsKey, 'latest', doObfuscate);
-          }
-      } catch(e) { console.error(`[Update Error] ${type}: ${e.message}`); }
-  }
-  
-  async function rotateUUIDAndDeploy(env, type, accounts, accountsKey, doObfuscate) {
-      const VARS_KEY = `VARS_${type}`;
-      const varsStr = await env.CONFIG_KV.get(VARS_KEY);
-      let variables = varsStr ? JSON.parse(varsStr) : [];
-      const uuidField = TEMPLATES[type].uuidField;
-      if (!uuidField) return; 
-  
-      let uuidUpdated = false;
-      variables = variables.map(v => {
-          if (v.key === uuidField) { v.value = crypto.randomUUID(); uuidUpdated = true; }
-          return v;
-      });
-      if (!uuidUpdated) variables.push({ key: uuidField, value: crypto.randomUUID() });
-      await env.CONFIG_KV.put(VARS_KEY, JSON.stringify(variables));
-  
-      const deployConfig = JSON.parse(await env.CONFIG_KV.get(`DEPLOY_CONFIG_${type}`) || '{"mode":"latest"}');
-      const targetSha = deployConfig.mode === 'fixed' ? deployConfig.currentSha : 'latest';
-      // 传入 doObfuscate
-      await coreDeployLogic(env, type, variables, [], accountsKey, targetSha, doObfuscate);
-  }
+function getUploadHeaders(email, key) {
+    return { "X-Auth-Email": email, "X-Auth-Key": key };
+}
 
-  async function handleGetCode(env, type) {
-      try {
-          const { scriptUrl } = getGithubUrls(type);
-          const res = await fetch(scriptUrl);
-          if (!res.ok) throw new Error("Fetch failed: " + res.status);
-          const code = await res.text();
-          return new Response(JSON.stringify({ success: true, code: code }), { headers: { "Content-Type": "application/json" } });
-      } catch(e) { return new Response(JSON.stringify({ success: false, msg: e.message }), { status: 500 }); }
-  }
-  
-  async function handleCheckUpdate(env, type, mode, limit = 10) {
-      try {
-          const DEPLOY_CONFIG_KEY = `DEPLOY_CONFIG_${type}`;
-          const deployConfig = JSON.parse(await env.CONFIG_KV.get(DEPLOY_CONFIG_KEY) || '{"mode":"latest"}');
-          const localSha = deployConfig.currentSha;
-          const localTime = deployConfig.deployTime;
-          const { apiUrl, branch } = getGithubUrls(type);
-          
-          let fetchUrl = apiUrl + (mode === 'history' ? `?sha=${branch}&per_page=${limit}` : `?sha=${branch}&per_page=1`);
-          const headers = { "User-Agent": "Cloudflare-Worker-Manager" };
-          if (env.GITHUB_TOKEN) headers["Authorization"] = `token ${env.GITHUB_TOKEN}`;
-  
-          const ghRes = await fetch(fetchUrl + `&t=${Date.now()}`, { headers });
-          if (!ghRes.ok) throw new Error(`GitHub API Error: ${ghRes.status}`);
-          const ghData = await ghRes.json();
-          
-          if (mode === 'history') return new Response(JSON.stringify({ history: ghData }), { headers: { "Content-Type": "application/json" } });
-  
-          const latestCommit = Array.isArray(ghData) ? ghData[0] : ghData;
-          let localCommitInfo = null;
-          if (localSha) {
-             if (localSha === latestCommit.sha) {
-                 localCommitInfo = { sha: localSha, date: latestCommit.commit.committer.date }; 
-             } else {
-                 localCommitInfo = { sha: localSha, date: localTime }; 
-             }
-          }
+// [服务器端轻量混淆] 供自动更新/熔断使用，避免依赖 heavy libraries
+function serverSideObfuscate(code) {
+    // 1. 注入 Window Polyfill
+    if (!code.includes('var window = globalThis')) {
+        code = 'var window = globalThis;\n' + code;
+    }
+    // 2. 移除注释 (简单正则)
+    code = code.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');
+    // 3. 压缩空白
+    code = code.replace(/^\s+|\s+$/gm, '').replace(/\n+/g, '\n');
+    return code;
+}
 
-          return new Response(JSON.stringify({ 
-              local: localCommitInfo,
-              remote: { sha: latestCommit.sha, date: latestCommit.commit.committer.date, message: latestCommit.commit.message },
-              mode: deployConfig.mode 
-          }), { headers: { "Content-Type": "application/json" } });
+async function handleCronJob(env) {
+    const ACCOUNTS_KEY = `ACCOUNTS_UNIFIED_STORAGE`;
+    const GLOBAL_CONFIG_KEY = `AUTO_UPDATE_CFG_GLOBAL`;
+    const configStr = await env.CONFIG_KV.get(GLOBAL_CONFIG_KEY);
+    if (!configStr) return;
+    const config = JSON.parse(configStr);
+    if (!config.enabled) return;
 
-      } catch (e) { return new Response(JSON.stringify({ error: e.message }), { status: 500 }); }
-  }
-  
-  async function handleManualDeploy(env, type, variables, deletedVariables, accountsKey, targetSha) {
-      // 手动部署时暂不自动应用服务器端混淆，依赖前端传参
-      const result = await coreDeployLogic(env, type, variables, deletedVariables, accountsKey, targetSha);
-      return new Response(JSON.stringify(result), { headers: { "Content-Type": "application/json" } });
-  }
+    const now = Date.now();
+    const lastCheck = config.lastCheck || 0;
+    const intervalMs = (parseInt(config.interval) || 30) * 60 * 1000;
+    // 读取自动混淆配置
+    const autoObfuscate = !!config.obfuscate;
 
-  async function handleBatchDeploy(env, reqData, accountsKey) {
+    if (now - lastCheck <= intervalMs) return;
+
+    const accounts = JSON.parse(await env.CONFIG_KV.get(ACCOUNTS_KEY) || "[]");
+    if (accounts.length === 0) return;
+
+    const statsData = await fetchInternalStats(accounts);
+    let actionTaken = false;
+
+    const fuseThreshold = parseInt(config.fuseThreshold || 0);
+    if (fuseThreshold > 0) {
+        for (const acc of accounts) {
+            const stat = statsData.find(s => s.alias === acc.alias);
+            if (!stat || stat.error) continue;
+            const limit = stat.max || 100000;
+            // [熔断触发] 超过阈值
+            if ((stat.total / limit) * 100 >= fuseThreshold) {
+                // 强制携带 obfuscate 参数进行部署
+                await rotateUUIDAndDeploy(env, 'cmliu', accounts, ACCOUNTS_KEY, autoObfuscate);
+                await rotateUUIDAndDeploy(env, 'joey', accounts, ACCOUNTS_KEY, autoObfuscate);
+                actionTaken = true;
+                break;
+            }
+        }
+    }
+
+    if (!actionTaken) {
+        // [自动更新] 携带混淆参数
+        await Promise.all([
+            checkAndDeployUpdate(env, 'cmliu', accounts, ACCOUNTS_KEY, autoObfuscate),
+            checkAndDeployUpdate(env, 'joey', accounts, ACCOUNTS_KEY, autoObfuscate)
+        ]);
+    }
+
+    config.lastCheck = now;
+    await env.CONFIG_KV.put(GLOBAL_CONFIG_KEY, JSON.stringify(config));
+}
+
+async function checkAndDeployUpdate(env, type, accounts, accountsKey, doObfuscate) {
+    try {
+        const deployConfig = JSON.parse(await env.CONFIG_KV.get(`DEPLOY_CONFIG_${type}`) || '{"mode":"latest"}');
+        if (deployConfig.mode === 'fixed') return;
+
+        const res = await handleCheckUpdate(env, type, 'latest');
+        const checkData = await res.json();
+
+        if (checkData.remote && (!checkData.local || checkData.remote.sha !== checkData.local.sha)) {
+            const varsStr = await env.CONFIG_KV.get(`VARS_${type}`);
+            const variables = varsStr ? JSON.parse(varsStr) : [];
+            // 传入 doObfuscate
+            await coreDeployLogic(env, type, variables, [], accountsKey, 'latest', doObfuscate);
+        }
+    } catch (e) { console.error(`[Update Error] ${type}: ${e.message}`); }
+}
+
+async function rotateUUIDAndDeploy(env, type, accounts, accountsKey, doObfuscate) {
+    const VARS_KEY = `VARS_${type}`;
+    const varsStr = await env.CONFIG_KV.get(VARS_KEY);
+    let variables = varsStr ? JSON.parse(varsStr) : [];
+    const uuidField = TEMPLATES[type].uuidField;
+    if (!uuidField) return;
+
+    let uuidUpdated = false;
+    variables = variables.map(v => {
+        if (v.key === uuidField) { v.value = crypto.randomUUID(); uuidUpdated = true; }
+        return v;
+    });
+    if (!uuidUpdated) variables.push({ key: uuidField, value: crypto.randomUUID() });
+    await env.CONFIG_KV.put(VARS_KEY, JSON.stringify(variables));
+
+    const deployConfig = JSON.parse(await env.CONFIG_KV.get(`DEPLOY_CONFIG_${type}`) || '{"mode":"latest"}');
+    const targetSha = deployConfig.mode === 'fixed' ? deployConfig.currentSha : 'latest';
+    // 传入 doObfuscate
+    await coreDeployLogic(env, type, variables, [], accountsKey, targetSha, doObfuscate);
+}
+
+async function handleGetCode(env, type) {
+    try {
+        const { scriptUrl } = getGithubUrls(type);
+        const res = await fetch(scriptUrl);
+        if (!res.ok) throw new Error("Fetch failed: " + res.status);
+        const code = await res.text();
+        return new Response(JSON.stringify({ success: true, code: code }), { headers: { "Content-Type": "application/json" } });
+    } catch (e) { return new Response(JSON.stringify({ success: false, msg: e.message }), { status: 500 }); }
+}
+
+async function handleCheckUpdate(env, type, mode, limit = 10) {
+    try {
+        const DEPLOY_CONFIG_KEY = `DEPLOY_CONFIG_${type}`;
+        const deployConfig = JSON.parse(await env.CONFIG_KV.get(DEPLOY_CONFIG_KEY) || '{"mode":"latest"}');
+        const localSha = deployConfig.currentSha;
+        const localTime = deployConfig.deployTime;
+        const { apiUrl, branch } = getGithubUrls(type);
+
+        let fetchUrl = apiUrl + (mode === 'history' ? `?sha=${branch}&per_page=${limit}` : `?sha=${branch}&per_page=1`);
+        const headers = { "User-Agent": "Cloudflare-Worker-Manager" };
+        if (env.GITHUB_TOKEN) headers["Authorization"] = `token ${env.GITHUB_TOKEN}`;
+
+        const ghRes = await fetch(fetchUrl + `&t=${Date.now()}`, { headers });
+        if (!ghRes.ok) throw new Error(`GitHub API Error: ${ghRes.status}`);
+        const ghData = await ghRes.json();
+
+        if (mode === 'history') return new Response(JSON.stringify({ history: ghData }), { headers: { "Content-Type": "application/json" } });
+
+        const latestCommit = Array.isArray(ghData) ? ghData[0] : ghData;
+        let localCommitInfo = null;
+        if (localSha) {
+            if (localSha === latestCommit.sha) {
+                localCommitInfo = { sha: localSha, date: latestCommit.commit.committer.date };
+            } else {
+                localCommitInfo = { sha: localSha, date: localTime };
+            }
+        }
+
+        return new Response(JSON.stringify({
+            local: localCommitInfo,
+            remote: { sha: latestCommit.sha, date: latestCommit.commit.committer.date, message: latestCommit.commit.message },
+            mode: deployConfig.mode
+        }), { headers: { "Content-Type": "application/json" } });
+
+    } catch (e) { return new Response(JSON.stringify({ error: e.message }), { status: 500 }); }
+}
+
+async function handleManualDeploy(env, type, variables, deletedVariables, accountsKey, targetSha) {
+    // 手动部署时暂不自动应用服务器端混淆，依赖前端传参
+    const result = await coreDeployLogic(env, type, variables, deletedVariables, accountsKey, targetSha);
+    return new Response(JSON.stringify(result), { headers: { "Content-Type": "application/json" } });
+}
+
+async function handleBatchDeploy(env, reqData, accountsKey) {
     const { template, workerName, kvName, config, targetAccounts, disableWorkersDev, customDomainPrefix, enableKV, customCode } = reqData;
     const allAccounts = JSON.parse(await env.CONFIG_KV.get(accountsKey) || "[]");
-    
+
     const accountsToDeploy = allAccounts.filter(a => targetAccounts.includes(a.alias));
-    if (accountsToDeploy.length === 0) return new Response(JSON.stringify([{name:"错误", success:false, msg:"未选择有效账号"}]), {headers:{"Content-Type":"application/json"}});
+    if (accountsToDeploy.length === 0) return new Response(JSON.stringify([{ name: "错误", success: false, msg: "未选择有效账号" }]), { headers: { "Content-Type": "application/json" } });
 
     let scriptContent = "";
     if (customCode) {
-        scriptContent = customCode; 
+        scriptContent = customCode;
         if (!scriptContent.includes('var window = globalThis') && !scriptContent.includes('import ')) {
-             scriptContent = 'var window = globalThis;\n' + scriptContent;
+            scriptContent = 'var window = globalThis;\n' + scriptContent;
         }
     } else {
         const { scriptUrl } = getGithubUrls(template);
         try {
             const codeRes = await fetch(scriptUrl);
-            if(!codeRes.ok) throw new Error("代码拉取失败");
+            if (!codeRes.ok) throw new Error("代码拉取失败");
             scriptContent = await codeRes.text();
             if (template === 'joey') scriptContent = 'var window = globalThis;\n' + scriptContent;
-        } catch(e) {
-            return new Response(JSON.stringify([{name:"网络错误", success:false, msg:e.message}]), {headers:{"Content-Type":"application/json"}});
+        } catch (e) {
+            return new Response(JSON.stringify([{ name: "网络错误", success: false, msg: e.message }]), { headers: { "Content-Type": "application/json" } });
         }
     }
 
@@ -380,18 +380,18 @@ const TEMPLATES = {
         const log = { name: `${acc.alias} -> [${workerName}]`, success: false, msg: "" };
         try {
             const jsonHeaders = getAuthHeaders(acc.email, acc.globalKey);
-            
+
             let nsId = "";
             if (enableKV) {
-                const nsListRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${acc.accountId}/storage/kv/namespaces?per_page=100`, {headers: jsonHeaders});
+                const nsListRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${acc.accountId}/storage/kv/namespaces?per_page=100`, { headers: jsonHeaders });
                 if (!nsListRes.ok) throw new Error("无法读取KV列表");
                 const nsList = (await nsListRes.json()).result;
                 const existNs = nsList.find(n => n.title === kvName);
                 if (existNs) { nsId = existNs.id; } else {
                     const createNsRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${acc.accountId}/storage/kv/namespaces`, {
-                        method: 'POST', headers: jsonHeaders, body: JSON.stringify({title: kvName})
+                        method: 'POST', headers: jsonHeaders, body: JSON.stringify({ title: kvName })
                     });
-                    if(!createNsRes.ok) throw new Error("创建KV失败: " + (await createNsRes.json()).errors[0].message);
+                    if (!createNsRes.ok) throw new Error("创建KV失败: " + (await createNsRes.json()).errors[0].message);
                     nsId = (await createNsRes.json()).result.id;
                 }
             }
@@ -404,14 +404,14 @@ const TEMPLATES = {
 
             if (config.admin) bindings.push({ name: "ADMIN", type: "plain_text", text: config.admin });
             if (template === 'joey' && config.uuid) bindings.push({ name: "u", type: "plain_text", text: config.uuid });
-            
+
             const defaultVars = TEMPLATES[template].defaultVars;
             defaultVars.forEach(key => {
-                if(key !== 'KV' && key !== 'C' && key !== 'ADMIN' && key !== 'u') {
+                if (key !== 'KV' && key !== 'C' && key !== 'ADMIN' && key !== 'u') {
                     if (key === 'UUID') {
                         bindings.push({ name: "UUID", type: "plain_text", text: config.uuid || crypto.randomUUID() });
                     } else {
-                         bindings.push({ name: key, type: "plain_text", text: "" });
+                        bindings.push({ name: key, type: "plain_text", text: "" });
                     }
                 }
             });
@@ -432,7 +432,7 @@ const TEMPLATES = {
                 if (customDomainPrefix && acc.defaultZoneId && acc.defaultZoneName) {
                     const hostname = `${customDomainPrefix}.${acc.defaultZoneName}`;
                     const domainRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${acc.accountId}/workers/domains`, {
-                        method: "PUT", headers: jsonHeaders, 
+                        method: "PUT", headers: jsonHeaders,
                         body: JSON.stringify({ hostname: hostname, service: workerName, zone_id: acc.defaultZoneId })
                     });
                     if (domainRes.ok) msgs.push(`✅ 绑定: https://${hostname}`);
@@ -460,7 +460,7 @@ const TEMPLATES = {
             } else {
                 log.msg = `❌ ${(await deployRes.json()).errors?.[0]?.message}`;
             }
-        } catch(e) { log.msg = `❌ ${e.message}`; }
+        } catch (e) { log.msg = `❌ ${e.message}`; }
         logs.push(log);
     }
 
@@ -472,228 +472,228 @@ const TEMPLATES = {
         await env.CONFIG_KV.put(accountsKey, JSON.stringify(finalAccounts));
     }
     return new Response(JSON.stringify(logs), { headers: { "Content-Type": "application/json" } });
-  }
+}
 
-  // 核心部署逻辑 (支持服务器端混淆)
-  async function coreDeployLogic(env, type, variables, deletedVariables, accountsKey, targetSha, enableServerObfuscate = false) {
-      try {
-          const accounts = JSON.parse(await env.CONFIG_KV.get(accountsKey) || "[]");
-          if (accounts.length === 0) return [{ name: "提示", success: false, msg: "无账号配置" }];
-          
-          const { scriptUrl, apiUrl } = getGithubUrls(type, targetSha);
-          let githubScriptContent = "";
-          let deployedSha = targetSha;
-          
-          try {
-              const codeRes = await fetch(scriptUrl + `?t=${Date.now()}`);
-              if (!codeRes.ok) throw new Error(`代码下载失败: ${codeRes.status}`);
-              githubScriptContent = await codeRes.text();
-              
-              if (!deployedSha) {
-                  const headers = { "User-Agent": "CF-Worker" };
-                  if (env.GITHUB_TOKEN) headers["Authorization"] = `token ${env.GITHUB_TOKEN}`;
-                  const apiRes = await fetch(apiUrl + `?sha=${TEMPLATES[type].ghBranch}&per_page=1`, { headers });
-                  if (apiRes.ok) {
-                      const commitData = (await apiRes.json())[0];
-                      deployedSha = commitData.sha;
-                  }
-              }
-          } catch (e) { return [{ name: "网络错误", success: false, msg: e.message }]; }
-  
-          if (type === 'joey') githubScriptContent = 'var window = globalThis;\n' + githubScriptContent;
-          if (type === 'ech') {
-             const proxyVar = variables ? variables.find(v => v.key === 'PROXYIP') : null;
-             const targetIP = proxyVar && proxyVar.value ? proxyVar.value.trim() : 'ProxyIP.CMLiussss.net';
-             const regex = /const\s+CF_FALLBACK_IPS\s*=\s*\[.*?\];/s;
-             githubScriptContent = githubScriptContent.replace(regex, `const CF_FALLBACK_IPS = ['${targetIP}'];`);
-          }
+// 核心部署逻辑 (支持服务器端混淆)
+async function coreDeployLogic(env, type, variables, deletedVariables, accountsKey, targetSha, enableServerObfuscate = false) {
+    try {
+        const accounts = JSON.parse(await env.CONFIG_KV.get(accountsKey) || "[]");
+        if (accounts.length === 0) return [{ name: "提示", success: false, msg: "无账号配置" }];
 
-          // [核心] 如果是自动部署/熔断，且启用了混淆，则执行服务器端混淆
-          if (enableServerObfuscate) {
-              githubScriptContent = serverSideObfuscate(githubScriptContent);
-          }
-  
-          const logs = [];
-          for (const acc of accounts) {
+        const { scriptUrl, apiUrl } = getGithubUrls(type, targetSha);
+        let githubScriptContent = "";
+        let deployedSha = targetSha;
+
+        try {
+            const codeRes = await fetch(scriptUrl + `?t=${Date.now()}`);
+            if (!codeRes.ok) throw new Error(`代码下载失败: ${codeRes.status}`);
+            githubScriptContent = await codeRes.text();
+
+            if (!deployedSha) {
+                const headers = { "User-Agent": "CF-Worker" };
+                if (env.GITHUB_TOKEN) headers["Authorization"] = `token ${env.GITHUB_TOKEN}`;
+                const apiRes = await fetch(apiUrl + `?sha=${TEMPLATES[type].ghBranch}&per_page=1`, { headers });
+                if (apiRes.ok) {
+                    const commitData = (await apiRes.json())[0];
+                    deployedSha = commitData.sha;
+                }
+            }
+        } catch (e) { return [{ name: "网络错误", success: false, msg: e.message }]; }
+
+        if (type === 'joey') githubScriptContent = 'var window = globalThis;\n' + githubScriptContent;
+        if (type === 'ech') {
+            const proxyVar = variables ? variables.find(v => v.key === 'PROXYIP') : null;
+            const targetIP = proxyVar && proxyVar.value ? proxyVar.value.trim() : 'ProxyIP.CMLiussss.net';
+            const regex = /const\s+CF_FALLBACK_IPS\s*=\s*\[.*?\];/s;
+            githubScriptContent = githubScriptContent.replace(regex, `const CF_FALLBACK_IPS = ['${targetIP}'];`);
+        }
+
+        // [核心] 如果是自动部署/熔断，且启用了混淆，则执行服务器端混淆
+        if (enableServerObfuscate) {
+            githubScriptContent = serverSideObfuscate(githubScriptContent);
+        }
+
+        const logs = [];
+        for (const acc of accounts) {
             const targetWorkers = acc[`workers_${type}`] || [];
             for (const wName of targetWorkers) {
                 const logItem = { name: `${acc.alias} -> [${wName}]`, success: false, msg: "" };
                 try {
-                  const baseUrl = `https://api.cloudflare.com/client/v4/accounts/${acc.accountId}/workers/scripts/${wName}`;
-                  const jsonHeaders = getAuthHeaders(acc.email, acc.globalKey);
-                  
-                  const bindingsRes = await fetch(`${baseUrl}/bindings`, { headers: jsonHeaders });
-                  let currentBindings = bindingsRes.ok ? (await bindingsRes.json()).result : [];
-                  if (deletedVariables && deletedVariables.length > 0) currentBindings = currentBindings.filter(b => !deletedVariables.includes(b.name));
-                  
-                  if (variables) {
-                      variables.forEach(v => {
-                          if (v.value && v.value.trim() !== "") {
-                              const idx = currentBindings.findIndex(b => b.name === v.key);
-                              if (idx !== -1) currentBindings[idx] = { name: v.key, type: "plain_text", text: v.value };
-                              else currentBindings.push({ name: v.key, type: "plain_text", text: v.value });
-                          }
-                      });
-                  }
-                  
-                  const metadata = { main_module: "index.js", bindings: currentBindings, compatibility_date: "2024-01-01" };
-                  const formData = new FormData();
-                  formData.append("metadata", JSON.stringify(metadata));
-                  formData.append("script", new Blob([githubScriptContent], { type: "application/javascript+module" }), "index.js");
-                  
-                  const uploadHeaders = getUploadHeaders(acc.email, acc.globalKey);
-                  const updateRes = await fetch(baseUrl, { method: "PUT", headers: uploadHeaders, body: formData });
-                  
-                  if (updateRes.ok) { 
-                      logItem.success = true; 
-                      logItem.msg = `✅ Ver: ${deployedSha ? deployedSha.substring(0,7) : 'Unknown'}${enableServerObfuscate ? ' (Obfuscated)' : ''}`; 
-                  } else { 
-                      logItem.msg = `❌ ${(await updateRes.json()).errors?.[0]?.message}`; 
-                  }
+                    const baseUrl = `https://api.cloudflare.com/client/v4/accounts/${acc.accountId}/workers/scripts/${wName}`;
+                    const jsonHeaders = getAuthHeaders(acc.email, acc.globalKey);
+
+                    const bindingsRes = await fetch(`${baseUrl}/bindings`, { headers: jsonHeaders });
+                    let currentBindings = bindingsRes.ok ? (await bindingsRes.json()).result : [];
+                    if (deletedVariables && deletedVariables.length > 0) currentBindings = currentBindings.filter(b => !deletedVariables.includes(b.name));
+
+                    if (variables) {
+                        variables.forEach(v => {
+                            if (v.value && v.value.trim() !== "") {
+                                const idx = currentBindings.findIndex(b => b.name === v.key);
+                                if (idx !== -1) currentBindings[idx] = { name: v.key, type: "plain_text", text: v.value };
+                                else currentBindings.push({ name: v.key, type: "plain_text", text: v.value });
+                            }
+                        });
+                    }
+
+                    const metadata = { main_module: "index.js", bindings: currentBindings, compatibility_date: "2024-01-01" };
+                    const formData = new FormData();
+                    formData.append("metadata", JSON.stringify(metadata));
+                    formData.append("script", new Blob([githubScriptContent], { type: "application/javascript+module" }), "index.js");
+
+                    const uploadHeaders = getUploadHeaders(acc.email, acc.globalKey);
+                    const updateRes = await fetch(baseUrl, { method: "PUT", headers: uploadHeaders, body: formData });
+
+                    if (updateRes.ok) {
+                        logItem.success = true;
+                        logItem.msg = `✅ Ver: ${deployedSha ? deployedSha.substring(0, 7) : 'Unknown'}${enableServerObfuscate ? ' (Obfuscated)' : ''}`;
+                    } else {
+                        logItem.msg = `❌ ${(await updateRes.json()).errors?.[0]?.message}`;
+                    }
                 } catch (err) { logItem.msg = `❌ ${err.message}`; }
                 logs.push(logItem);
-            } 
-          }
-  
-          if (deployedSha) {
-              const DEPLOY_CONFIG_KEY = `DEPLOY_CONFIG_${type}`;
-              const mode = targetSha ? 'fixed' : 'latest';
-              await env.CONFIG_KV.put(DEPLOY_CONFIG_KEY, JSON.stringify({ mode: mode, currentSha: deployedSha, deployTime: new Date().toISOString() }));
-          }
-          return logs;
-      } catch (e) { return [{ name: "系统错误", success: false, msg: e.message }]; }
-  }
-  
-  async function fetchInternalStats(accounts) {
-     const now = new Date();
-     const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
-     const query = `query getBillingMetrics($AccountID: String!, $filter: AccountWorkersInvocationsAdaptiveFilter_InputObject) {
+            }
+        }
+
+        if (deployedSha) {
+            const DEPLOY_CONFIG_KEY = `DEPLOY_CONFIG_${type}`;
+            const mode = targetSha ? 'fixed' : 'latest';
+            await env.CONFIG_KV.put(DEPLOY_CONFIG_KEY, JSON.stringify({ mode: mode, currentSha: deployedSha, deployTime: new Date().toISOString() }));
+        }
+        return logs;
+    } catch (e) { return [{ name: "系统错误", success: false, msg: e.message }]; }
+}
+
+async function fetchInternalStats(accounts) {
+    const now = new Date();
+    const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
+    const query = `query getBillingMetrics($AccountID: String!, $filter: AccountWorkersInvocationsAdaptiveFilter_InputObject) {
          viewer { accounts(filter: {accountTag: $AccountID}) {
              workersInvocationsAdaptive(limit: 10000, filter: $filter) { sum { requests } }
              pagesFunctionsInvocationsAdaptiveGroups(limit: 1000, filter: $filter) { sum { requests } }
          }}}`;
-     return await Promise.all(accounts.map(async (acc) => {
-       try {
-         const res = await fetch("https://api.cloudflare.com/client/v4/graphql", {
-           method: "POST", headers: getAuthHeaders(acc.email, acc.globalKey),
-           body: JSON.stringify({ query: query, variables: { AccountID: acc.accountId, filter: { datetime_geq: todayStart.toISOString(), datetime_leq: now.toISOString() } } })
-         });
-         const data = await res.json();
-         const accountData = data.data?.viewer?.accounts?.[0];
-         if (!accountData) return { alias: acc.alias, error: "无数据" };
-         const workerReqs = accountData.workersInvocationsAdaptive?.reduce((a, b) => a + (b.sum.requests || 0), 0) || 0;
-         const pagesReqs = accountData.pagesFunctionsInvocationsAdaptiveGroups?.reduce((a, b) => a + (b.sum.requests || 0), 0) || 0;
-         return { alias: acc.alias, total: workerReqs + pagesReqs, max: 100000 };
-       } catch (e) { return { alias: acc.alias, error: e.message }; }
-     }));
-  }
-  
-  async function handleStats(env, k) {
-      try {
-          const accounts = JSON.parse(await env.CONFIG_KV.get(k) || "[]");
-          const results = await fetchInternalStats(accounts);
-          return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
-      } catch(e) { return new Response(JSON.stringify({ error: e.message }), { status: 500 }); }
-  }
+    return await Promise.all(accounts.map(async (acc) => {
+        try {
+            const res = await fetch("https://api.cloudflare.com/client/v4/graphql", {
+                method: "POST", headers: getAuthHeaders(acc.email, acc.globalKey),
+                body: JSON.stringify({ query: query, variables: { AccountID: acc.accountId, filter: { datetime_geq: todayStart.toISOString(), datetime_leq: now.toISOString() } } })
+            });
+            const data = await res.json();
+            const accountData = data.data?.viewer?.accounts?.[0];
+            if (!accountData) return { alias: acc.alias, error: "无数据" };
+            const workerReqs = accountData.workersInvocationsAdaptive?.reduce((a, b) => a + (b.sum.requests || 0), 0) || 0;
+            const pagesReqs = accountData.pagesFunctionsInvocationsAdaptiveGroups?.reduce((a, b) => a + (b.sum.requests || 0), 0) || 0;
+            return { alias: acc.alias, total: workerReqs + pagesReqs, max: 100000 };
+        } catch (e) { return { alias: acc.alias, error: e.message }; }
+    }));
+}
 
-  async function handleFetchBindings(accountId, email, key, workerName) {
-      try {
-          const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}/bindings`, { 
-              headers: getAuthHeaders(email, key)
-          });
-          const data = await res.json();
-          const bindings = data.result
-              .filter(b => b.type === "plain_text" || b.type === "secret_text")
-              .map(b => ({ key: b.name, value: b.type === "plain_text" ? b.text : "" }));
-          return new Response(JSON.stringify({ success: true, data: bindings }), { headers: { "Content-Type": "application/json" } });
-      } catch(e) { return new Response(JSON.stringify({ success: false, msg: e.message }), { status: 500 }); }
-  }
+async function handleStats(env, k) {
+    try {
+        const accounts = JSON.parse(await env.CONFIG_KV.get(k) || "[]");
+        const results = await fetchInternalStats(accounts);
+        return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
+    } catch (e) { return new Response(JSON.stringify({ error: e.message }), { status: 500 }); }
+}
 
-  async function handleGetZones(accountId, email, key) {
-      try {
-          const res = await fetch(`https://api.cloudflare.com/client/v4/zones?account.id=${accountId}&per_page=50`, {
-              headers: getAuthHeaders(email, key)
-          });
-          const data = await res.json();
-          const zones = data.result.map(z => ({ id: z.id, name: z.name }));
-          return new Response(JSON.stringify({ success: true, zones: zones }), { headers: { "Content-Type": "application/json" } });
-      } catch (e) { return new Response(JSON.stringify({ success: false, msg: e.message }), { status: 500 }); }
-  }
+async function handleFetchBindings(accountId, email, key, workerName) {
+    try {
+        const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}/bindings`, {
+            headers: getAuthHeaders(email, key)
+        });
+        const data = await res.json();
+        const bindings = data.result
+            .filter(b => b.type === "plain_text" || b.type === "secret_text")
+            .map(b => ({ key: b.name, value: b.type === "plain_text" ? b.text : "" }));
+        return new Response(JSON.stringify({ success: true, data: bindings }), { headers: { "Content-Type": "application/json" } });
+    } catch (e) { return new Response(JSON.stringify({ success: false, msg: e.message }), { status: 500 }); }
+}
 
-  async function handleGetAllWorkers(accountId, email, key) {
-      try {
-          const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts`, {
-              headers: getAuthHeaders(email, key)
-          });
-          const data = await res.json();
-          const workers = data.result.map(w => ({ 
-              id: w.id, 
-              created_on: w.created_on, 
-              modified_on: w.modified_on 
-          }));
-          return new Response(JSON.stringify({ success: true, workers: workers }), { headers: { "Content-Type": "application/json" } });
-      } catch (e) { return new Response(JSON.stringify({ success: false, msg: e.message }), { status: 500 }); }
-  }
+async function handleGetZones(accountId, email, key) {
+    try {
+        const res = await fetch(`https://api.cloudflare.com/client/v4/zones?account.id=${accountId}&per_page=50`, {
+            headers: getAuthHeaders(email, key)
+        });
+        const data = await res.json();
+        const zones = data.result.map(z => ({ id: z.id, name: z.name }));
+        return new Response(JSON.stringify({ success: true, zones: zones }), { headers: { "Content-Type": "application/json" } });
+    } catch (e) { return new Response(JSON.stringify({ success: false, msg: e.message }), { status: 500 }); }
+}
 
-  async function handleDeleteWorker(env, accountId, email, key, workerName, deleteKv) {
-      try {
-          const headers = getAuthHeaders(email, key);
-          
-          let kvNamespaceIds = [];
-          if (deleteKv) {
-              const bindRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}/bindings`, { headers });
-              if (bindRes.ok) {
-                  const binds = (await bindRes.json()).result;
-                  kvNamespaceIds = binds.filter(b => b.type === 'kv_namespace').map(b => b.namespace_id);
-              }
-          }
+async function handleGetAllWorkers(accountId, email, key) {
+    try {
+        const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts`, {
+            headers: getAuthHeaders(email, key)
+        });
+        const data = await res.json();
+        const workers = data.result.map(w => ({
+            id: w.id,
+            created_on: w.created_on,
+            modified_on: w.modified_on
+        }));
+        return new Response(JSON.stringify({ success: true, workers: workers }), { headers: { "Content-Type": "application/json" } });
+    } catch (e) { return new Response(JSON.stringify({ success: false, msg: e.message }), { status: 500 }); }
+}
 
-          const delWorkerRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`, {
-              method: "DELETE", headers
-          });
-          
-          if (delWorkerRes.ok) {
-               const ACCOUNTS_KEY = `ACCOUNTS_UNIFIED_STORAGE`;
-               const accounts = JSON.parse(await env.CONFIG_KV.get(ACCOUNTS_KEY) || "[]");
-               let updated = false;
+async function handleDeleteWorker(env, accountId, email, key, workerName, deleteKv) {
+    try {
+        const headers = getAuthHeaders(email, key);
 
-               for (const acc of accounts) {
-                   if (acc.accountId === accountId) {
-                       ['workers_cmliu', 'workers_joey', 'workers_ech'].forEach(type => {
-                           if (acc[type] && acc[type].includes(workerName)) {
-                               acc[type] = acc[type].filter(n => n !== workerName);
-                               updated = true;
-                           }
-                       });
-                   }
-               }
+        let kvNamespaceIds = [];
+        if (deleteKv) {
+            const bindRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}/bindings`, { headers });
+            if (bindRes.ok) {
+                const binds = (await bindRes.json()).result;
+                kvNamespaceIds = binds.filter(b => b.type === 'kv_namespace').map(b => b.namespace_id);
+            }
+        }
 
-               if (updated) {
-                   await env.CONFIG_KV.put(ACCOUNTS_KEY, JSON.stringify(accounts));
-               }
+        const delWorkerRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`, {
+            method: "DELETE", headers
+        });
 
-               if (deleteKv && kvNamespaceIds.length > 0) {
-                   await new Promise(r => setTimeout(r, 1000)); 
-                   for (const nsId of kvNamespaceIds) {
-                       await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${nsId}`, {
-                           method: "DELETE", headers
-                       });
-                   }
-               }
-               return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
-          } else {
-              const err = await delWorkerRes.json();
-              return new Response(JSON.stringify({ success: false, msg: err.errors[0]?.message || "删除失败" }), { status: 200 });
-          }
-      } catch (e) { return new Response(JSON.stringify({ success: false, msg: e.message }), { status: 500 }); }
-  }
-  
-  function loginHtml() { return `<!DOCTYPE html><html><body style="display:flex;justify-content:center;align-items:center;height:100vh;background:#f3f4f6"><form method="GET"><input type="password" name="code" placeholder="密码" style="padding:10px"><button style="padding:10px">登录</button></form></body></html>`; }
-  
-  // ==========================================
-  // 2. 前端页面 (完整 HTML)
-  // ==========================================
-  function mainHtml() {
+        if (delWorkerRes.ok) {
+            const ACCOUNTS_KEY = `ACCOUNTS_UNIFIED_STORAGE`;
+            const accounts = JSON.parse(await env.CONFIG_KV.get(ACCOUNTS_KEY) || "[]");
+            let updated = false;
+
+            for (const acc of accounts) {
+                if (acc.accountId === accountId) {
+                    ['workers_cmliu', 'workers_joey', 'workers_ech'].forEach(type => {
+                        if (acc[type] && acc[type].includes(workerName)) {
+                            acc[type] = acc[type].filter(n => n !== workerName);
+                            updated = true;
+                        }
+                    });
+                }
+            }
+
+            if (updated) {
+                await env.CONFIG_KV.put(ACCOUNTS_KEY, JSON.stringify(accounts));
+            }
+
+            if (deleteKv && kvNamespaceIds.length > 0) {
+                await new Promise(r => setTimeout(r, 1000));
+                for (const nsId of kvNamespaceIds) {
+                    await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${nsId}`, {
+                        method: "DELETE", headers
+                    });
+                }
+            }
+            return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
+        } else {
+            const err = await delWorkerRes.json();
+            return new Response(JSON.stringify({ success: false, msg: err.errors[0]?.message || "删除失败" }), { status: 200 });
+        }
+    } catch (e) { return new Response(JSON.stringify({ success: false, msg: e.message }), { status: 500 }); }
+}
+
+function loginHtml() { return `<!DOCTYPE html><html><body style="display:flex;justify-content:center;align-items:center;height:100vh;background:#f3f4f6"><form method="GET"><input type="password" name="code" placeholder="密码" style="padding:10px"><button style="padding:10px">登录</button></form></body></html>`; }
+
+// ==========================================
+// 2. 前端页面 (完整 HTML)
+// ==========================================
+function mainHtml() {
     return `
   <!DOCTYPE html>
   <html lang="zh-CN">
@@ -1534,7 +1534,7 @@ const TEMPLATES = {
       }
       
       async function toggleFavorite(type,item,isRemove){
-          await fetch('/api/favorites',{method:'POST',body:JSON.stringify({action:isRemove?'remove':'add',item:item,type:type})});
+          await fetch(\`/api/favorites?type=\${type}\`,{method:'POST',body:JSON.stringify({action:isRemove?'remove':'add',item:item})});
           // 刷新数据
           const r = await fetch(\`/api/favorites?type=\${type}\`);
           window.currentFavData = await r.json();
@@ -1550,4 +1550,4 @@ const TEMPLATES = {
     </script>
   </body></html>
     `;
-  }
+}
