@@ -1,6 +1,6 @@
 /**
- * Cloudflare Worker 多项目部署管理器 (V10.5.0 - Starfield Theme)
- * 更新日志 (V10.5.0)：
+ * Cloudflare Worker 多项目部署管理器 (V10.6.0 - Starfield Theme)
+ * 更新日志 (V10.6.0)：
  * 1. [Feature] 一键修复 1101：删除 → 改域名 → 重建 → 恢复变量+域名。
  * 2. [Remove] 删除所有混淆功能。
  * 完整历史版本记录见 CHANGELOG.md
@@ -973,7 +973,7 @@ function mainHtml() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="/manifest.json">
-    <title>Worker 智能中控 (V10.5.0)</title>
+    <title>Worker 智能中控 (V10.6.0)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -1083,7 +1083,7 @@ function mainHtml() {
       
       <header class="bg-white px-4 py-3 md:px-6 md:py-4 rounded shadow flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div class="flex-none">
-              <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">🚀 Worker 部署中控 <span class="text-xs bg-purple-600 text-white px-2 py-0.5 rounded ml-2">V10.5.0</span></h1>
+              <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">🚀 Worker 部署中控 <span class="text-xs bg-purple-600 text-white px-2 py-0.5 rounded ml-2">V10.6.0</span></h1>
               <div class="text-[10px] text-gray-400 mt-1">安全加固 · 熔断轮换 · 子域名管理 · 星空主题</div>
           </div>
           <div id="logs" class="bg-slate-900 text-green-400 p-2 rounded text-xs font-mono hidden max-h-[80px] lg:max-h-[50px] overflow-y-auto shadow-inner w-full lg:flex-1 lg:mx-4 order-2 lg:order-none"></div>
