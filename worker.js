@@ -1,5 +1,11 @@
 /**
- * Cloudflare Worker 多项目部署管理器 (V10.2.1 - Starfield Theme)
+ * Cloudflare Worker 多项目部署管理器 (V10.2.3 - Starfield Theme)
+ * 更新日志 (V10.2.3)：
+ * 1. [Fix] 重写 serverSideObfuscate，移除危险的注释删除正则（会破坏模板字面量中的 HTML/URL 内容）。
+ *
+ * 1. [Fix] DEPLOY_CONFIG 仅在至少一个 worker 成功部署后才更新，防止部署失败时虚假标记为最新。
+ * 2. [Fix] 手动部署现在会读取“自动混淆”开关，开启时自动应用服务器端混淆。
+ *
  * 更新日志 (V10.2.1)：
  * 1. [Fix] 修复 coreDeployLogic 中 targetSha='latest' 被当作 git ref 导致自动更新代码下载失败。
  * 2. [Fix] 修复部署后 deploy config 被错误锁定为 fixed 模式，导致后续自动更新永远跳过。
@@ -238,18 +244,15 @@ function getUploadHeaders(email, key) {
     return { "X-Auth-Email": email, "X-Auth-Key": key };
 }
 
-// [服务器端轻量混淆] 供自动更新/熔断使用，避免依赖 heavy libraries
+// [服务器端轻量混淆] 供自动更新/熔断/手动部署使用
+// 注意：不移除注释，因为正则无法区分代码注释和模板字面量中的 // 或 /* 内容
 function serverSideObfuscate(code) {
     // 1. 注入 Window Polyfill
     if (!code.includes('var window = globalThis')) {
         code = 'var window = globalThis;\n' + code;
     }
-    // 2. 移除块注释 /* ... */ （安全）
-    code = code.replace(/\/\*[\s\S]*?\*\//g, '');
-    // 3. 仅移除行首单行注释（避免误删 URL 中的 //）
-    code = code.replace(/^\s*\/\/.*$/gm, '');
-    // 4. 压缩空白
-    code = code.replace(/^\s+|\s+$/gm, '').replace(/\n{2,}/g, '\n');
+    // 2. 压缩连续空行（安全操作，不会破坏代码结构）
+    code = code.replace(/\n{3,}/g, '\n\n');
     return code;
 }
 
@@ -392,8 +395,11 @@ async function handleCheckUpdate(env, type, mode, limit = 10) {
 }
 
 async function handleManualDeploy(env, type, variables, deletedVariables, accountsKey, targetSha) {
-    // 手动部署时暂不自动应用服务器端混淆，依赖前端传参
-    const result = await coreDeployLogic(env, type, variables, deletedVariables, accountsKey, targetSha);
+    // 读取自动混淆配置，手动部署也遵循此开关
+    const GLOBAL_CONFIG_KEY = `AUTO_UPDATE_CFG_GLOBAL`;
+    const configStr = await env.CONFIG_KV.get(GLOBAL_CONFIG_KEY);
+    const doObfuscate = configStr ? !!JSON.parse(configStr).obfuscate : false;
+    const result = await coreDeployLogic(env, type, variables, deletedVariables, accountsKey, targetSha, doObfuscate);
     return new Response(JSON.stringify(result), { headers: { "Content-Type": "application/json" } });
 }
 
@@ -608,7 +614,9 @@ async function coreDeployLogic(env, type, variables, deletedVariables, accountsK
             }
         }
 
-        if (deployedSha) {
+        // 仅在至少有一个 worker 成功部署时才更新 DEPLOY_CONFIG
+        const hasSuccess = logs.some(l => l.success);
+        if (deployedSha && hasSuccess) {
             const DEPLOY_CONFIG_KEY = `DEPLOY_CONFIG_${type}`;
             const mode = isLatestMode ? 'latest' : 'fixed';
             await env.CONFIG_KV.put(DEPLOY_CONFIG_KEY, JSON.stringify({ mode: mode, currentSha: deployedSha, deployTime: new Date().toISOString() }));
@@ -807,7 +815,7 @@ function mainHtml() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="/manifest.json">
-    <title>Worker 智能中控 (V10.2.1)</title>
+    <title>Worker 智能中控 (V10.2.3)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/javascript-obfuscator/dist/index.browser.js"></script>
@@ -917,7 +925,7 @@ function mainHtml() {
       
       <header class="bg-white px-4 py-3 md:px-6 md:py-4 rounded shadow flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div class="flex-none">
-              <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">🚀 Worker 部署中控 <span class="text-xs bg-purple-600 text-white px-2 py-0.5 rounded ml-2">V10.2.1</span></h1>
+              <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">🚀 Worker 部署中控 <span class="text-xs bg-purple-600 text-white px-2 py-0.5 rounded ml-2">V10.2.3</span></h1>
               <div class="text-[10px] text-gray-400 mt-1">安全加固 · 熔断混淆 · 子域名管理 · 星空主题</div>
           </div>
           <div id="logs" class="bg-slate-900 text-green-400 p-2 rounded text-xs font-mono hidden max-h-[80px] lg:max-h-[50px] overflow-y-auto shadow-inner w-full lg:flex-1 lg:mx-4 order-2 lg:order-none"></div>
